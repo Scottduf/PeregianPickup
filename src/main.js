@@ -1,4 +1,5 @@
 import './style.css';
+import config from './config.js';
 
 class SuperRecycleGame {
   constructor() {
@@ -52,6 +53,7 @@ class SuperRecycleGame {
     this.spawnEnemies();
     
     // Load leaderboard
+    this.apiUrl = config.apiUrl; // Backend API URL from config
     this.loadLeaderboard();
     
     // Start game loop
@@ -1916,19 +1918,63 @@ class SuperRecycleGame {
     document.getElementById('gameOver').style.display = 'block';
   }
   
-  submitScore() {
+  async submitScore() {
     const playerName = document.getElementById('playerName').value.trim() || 'Anonymous';
+    
+    try {
+      const response = await fetch(`${this.apiUrl}/scores`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          player_name: playerName,
+          score: this.score
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Score submitted successfully:', result);
+        this.loadLeaderboard(); // Refresh leaderboard
+        
+        // Show success message
+        this.showMessage('Score saved!', '#7ED321');
+      } else {
+        throw new Error('Failed to submit score');
+      }
+    } catch (error) {
+      console.error('Error submitting score:', error);
+      // Fallback to localStorage if backend is unavailable
+      this.submitScoreOffline(playerName);
+      this.showMessage('Score saved locally (offline)', '#F5A623');
+    }
+  }
+  
+  submitScoreOffline(playerName) {
     const scores = this.getStoredScores();
     scores.push({ name: playerName, score: this.score, date: new Date().toLocaleDateString() });
     scores.sort((a, b) => b.score - a.score);
     scores.splice(10); // Keep only top 10
     
     localStorage.setItem('recycleGameScores', JSON.stringify(scores));
-    this.displayLeaderboard();
+    this.displayLeaderboardOffline();
   }
   
-  loadLeaderboard() {
-    this.displayLeaderboard();
+  async loadLeaderboard() {
+    try {
+      const response = await fetch(`${this.apiUrl}/scores`);
+      if (response.ok) {
+        const scores = await response.json();
+        this.displayLeaderboard(scores);
+      } else {
+        throw new Error('Failed to load leaderboard');
+      }
+    } catch (error) {
+      console.error('Error loading leaderboard:', error);
+      // Fallback to localStorage if backend is unavailable
+      this.displayLeaderboardOffline();
+    }
   }
   
   getStoredScores() {
@@ -1936,12 +1982,59 @@ class SuperRecycleGame {
     return stored ? JSON.parse(stored) : [];
   }
   
-  displayLeaderboard() {
+  displayLeaderboard(scores) {
+    const scoresDiv = document.getElementById('scores');
+    if (scores && scores.length > 0) {
+      scoresDiv.innerHTML = scores.slice(0, 5).map((score, index) => 
+        `${index + 1}. ${score.player_name}: ${score.score}`
+      ).join('<br>');
+    } else {
+      scoresDiv.innerHTML = 'No scores yet!';
+    }
+  }
+  
+  displayLeaderboardOffline() {
     const scores = this.getStoredScores();
     const scoresDiv = document.getElementById('scores');
     scoresDiv.innerHTML = scores.slice(0, 5).map((score, index) => 
-      `${index + 1}. ${score.name}: ${score.score}`
+      `${index + 1}. ${score.name}: ${score.score} (offline)`
     ).join('<br>');
+  }
+  
+  showMessage(text, color = '#FFFFFF') {
+    // Create a temporary message element
+    const messageEl = document.createElement('div');
+    messageEl.style.position = 'fixed';
+    messageEl.style.top = '50%';
+    messageEl.style.left = '50%';
+    messageEl.style.transform = 'translate(-50%, -50%)';
+    messageEl.style.background = 'rgba(0,0,0,0.8)';
+    messageEl.style.color = color;
+    messageEl.style.padding = '20px';
+    messageEl.style.borderRadius = '10px';
+    messageEl.style.fontSize = '18px';
+    messageEl.style.fontWeight = 'bold';
+    messageEl.style.zIndex = '1000';
+    messageEl.style.animation = 'fadeInOut 2s ease-in-out';
+    messageEl.textContent = text;
+    
+    // Add fade animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeInOut {
+        0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        50% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(messageEl);
+    
+    // Remove after animation
+    setTimeout(() => {
+      document.body.removeChild(messageEl);
+      document.head.removeChild(style);
+    }, 2000);
   }
   
   restart() {
