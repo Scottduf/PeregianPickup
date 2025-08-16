@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/PeregianPickup/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>Peregian Pickup - Environmental Game</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: linear-gradient(135deg, #7ED321 0%, #4A90E2 100%);
+        font-family: 'Arial', sans-serif;
+        touch-action: manipulation;
+      }
+      #gameContainer {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      #gameTitle {
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 2.5em;
+        font-weight: bold;
+        color: #F5A623;
+        text-shadow: 2px 2px 6px rgba(45, 80, 22, 0.8);
+        z-index: 15;
+        background: linear-gradient(45deg, #F5A623, #FFD700);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      #gameCanvas {
+        border: 3px solid #2D5016;
+        background: linear-gradient(45deg, #90EE90, #98FB98);
+        touch-action: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(45, 80, 22, 0.3);
+      }
+      #ui {
+        position: absolute;
+        top: 70px;
+        left: 20px;
+        color: white;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        z-index: 10;
+        background: linear-gradient(135deg, rgba(45, 80, 22, 0.9), rgba(74, 144, 226, 0.8));
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        font-size: 16px;
+      }
+      #gameOver {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, rgba(45, 80, 22, 0.95), rgba(74, 144, 226, 0.9));
+        color: white;
+        padding: 30px;
+        border-radius: 20px;
+        text-align: center;
+        display: none;
+        z-index: 20;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        border: 2px solid #F5A623;
+      }
+      #gameOver h2 {
+        margin-bottom: 15px;
+        color: #F5A623;
+        font-size: 1.8em;
+      }
+      #gameOver input {
+        padding: 12px;
+        margin: 10px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        background: white;
+        color: #2D5016;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      }
+      #gameOver button {
+        padding: 12px 24px;
+        margin: 8px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(45deg, #7ED321, #4A90E2);
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      }
+      #gameOver button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+      }
+      #leaderboard {
+        position: absolute;
+        top: 70px;
+        right: 20px;
+        background: linear-gradient(135deg, rgba(45, 80, 22, 0.9), rgba(74, 144, 226, 0.8));
+        color: white;
+        padding: 15px;
+        border-radius: 12px;
+        font-size: 13px;
+        z-index: 10;
+        min-width: 180px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      }
+      #leaderboard h3 {
+        margin-bottom: 10px;
+        font-size: 16px;
+        color: #F5A623;
+        text-align: center;
+      }
+    </style>
+    <script type="module" crossorigin src="/PeregianPickup/assets/index-D95SnW7w.js"></script>
+    <link rel="stylesheet" crossorigin href="/PeregianPickup/assets/index-C47yAyHy.css">
+  </head>
+  <body>
+    <div id="gameContainer">
+      <div id="gameTitle">Peregian Pickup</div>
+      <canvas id="gameCanvas" width="800" height="600"></canvas>
+      <div id="ui">
+        <div>Time: <span id="timer">60</span>s</div>
+        <div>Score: <span id="score">0</span></div>
+        <div>Carrying: <span id="carrying">Nothing</span></div>
+      </div>
+      <div id="leaderboard">
+        <h3>🏆 Leaderboard</h3>
+        <div id="scores"></div>
+      </div>
+      <div id="gameOver">
+        <h2>🎉 Game Complete!</h2>
+        <p>Final Score: <span id="finalScore">0</span></p>
+        <input type="text" id="playerName" placeholder="Enter your name" maxlength="20">
+        <br><br>
+        <button onclick="game.submitScore()">Submit Score</button>
+        <button onclick="game.restart()">Play Again</button>
+      </div>
+    </div>
+  </body>
+</html>
