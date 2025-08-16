@@ -5,7 +5,7 @@ class SuperRecycleGame {
   constructor() {
     this.canvas = document.getElementById('gameCanvas');
     this.ctx = this.canvas.getContext('2d');
-    this.gameState = 'playing'; // 'playing', 'gameOver'
+    this.gameState = 'start'; // 'start', 'playing', 'gameOver'
     
     // Game settings
     this.gameTime = 60;
@@ -125,8 +125,16 @@ class SuperRecycleGame {
       const touchX = touch.clientX - rect.left;
       const touchY = touch.clientY - rect.top;
       
+      // Check for start button click
+      if (this.gameState === 'start' && this.checkStartButtonClick(touchX, touchY)) {
+        this.startGame();
+        return;
+      }
+      
       // Move player towards touch position
-      this.movePlayerTowards(touchX, touchY);
+      if (this.gameState === 'playing') {
+        this.movePlayerTowards(touchX, touchY);
+      }
     });
     
     this.canvas.addEventListener('touchmove', (e) => {
@@ -136,7 +144,9 @@ class SuperRecycleGame {
       const touchX = touch.clientX - rect.left;
       const touchY = touch.clientY - rect.top;
       
-      this.movePlayerTowards(touchX, touchY);
+      if (this.gameState === 'playing') {
+        this.movePlayerTowards(touchX, touchY);
+      }
     });
     
     // Mouse controls for desktop
@@ -145,13 +155,35 @@ class SuperRecycleGame {
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
       
-      this.movePlayerTowards(clickX, clickY);
+      // Check for start button click
+      if (this.gameState === 'start' && this.checkStartButtonClick(clickX, clickY)) {
+        this.startGame();
+        return;
+      }
+      
+      if (this.gameState === 'playing') {
+        this.movePlayerTowards(clickX, clickY);
+      }
     });
     
     // Keyboard controls
     document.addEventListener('keydown', (e) => {
-      this.handleKeyboard(e.key);
+      if (this.gameState === 'start' && (e.key === 'Enter' || e.key === ' ')) {
+        this.startGame();
+        return;
+      }
+      if (this.gameState === 'playing') {
+        this.handleKeyboard(e.key);
+      }
     });
+  }
+  
+  checkStartButtonClick(x, y) {
+    if (!this.startButton) return false;
+    return x >= this.startButton.x && 
+           x <= this.startButton.x + this.startButton.width &&
+           y >= this.startButton.y && 
+           y <= this.startButton.y + this.startButton.height;
   }
   
   movePlayerTowards(targetX, targetY) {
@@ -1809,6 +1841,11 @@ class SuperRecycleGame {
   }
   
   render() {
+    if (this.gameState === 'start') {
+      this.renderStartScreen();
+      return;
+    }
+    
     // Clear canvas with green playground background
     const bgGradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
     bgGradient.addColorStop(0, '#90EE90');
@@ -2038,8 +2075,8 @@ class SuperRecycleGame {
   }
   
   restart() {
-    // Reset game state
-    this.gameState = 'playing';
+    // Reset game state to start screen
+    this.gameState = 'start';
     this.timeLeft = this.gameTime;
     this.score = 0;
     this.player.x = 400;
@@ -2051,14 +2088,205 @@ class SuperRecycleGame {
     // Reset game objects
     this.trash = [];
     this.enemies = [];
-    this.spawnTrash();
-    this.spawnEnemies();
     
     // Hide game over screen
     document.getElementById('gameOver').style.display = 'none';
     document.getElementById('playerName').value = '';
     
-    // Restart timer
+    // Update UI
+    this.updateUI();
+  }
+  
+  renderStartScreen() {
+    // Clear canvas with attractive gradient background
+    const bgGradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+    bgGradient.addColorStop(0, '#7ED321');
+    bgGradient.addColorStop(0.5, '#4A90E2');
+    bgGradient.addColorStop(1, '#5CB85C');
+    this.ctx.fillStyle = bgGradient;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Add subtle pattern overlay
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+    for (let x = 0; x < this.canvas.width; x += 40) {
+      for (let y = 0; y < this.canvas.height; y += 40) {
+        this.ctx.fillRect(x, y, 2, 2);
+      }
+    }
+    
+    // Draw decorative trash items in corners (smaller and more subtle)
+    const decorTrash = [
+      { type: 'can', x: 680, y: 80 },
+      { type: 'bottle', x: 120, y: 520 },
+      { type: 'apple', x: 680, y: 520 }
+    ];
+    
+    decorTrash.forEach(item => {
+      this.drawRealisticTrash(item, item.x, item.y, 0.5); // Even smaller scale
+    });
+    
+    // Main title with better styling and shadow
+    this.ctx.save();
+    
+    // Title shadow
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    this.ctx.font = 'bold 56px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('Peregian Pickup', this.canvas.width / 2 + 3, 83);
+    
+    // Main title
+    this.ctx.fillStyle = '#FFD700';
+    this.ctx.strokeStyle = '#B8860B';
+    this.ctx.lineWidth = 3;
+    this.ctx.font = 'bold 56px Arial';
+    this.ctx.fillText('Peregian Pickup', this.canvas.width / 2, 80);
+    this.ctx.strokeText('Peregian Pickup', this.canvas.width / 2, 80);
+    this.ctx.restore();
+    
+    // Subtitle
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    this.ctx.font = 'bold 18px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('Environmental Cleanup Challenge', this.canvas.width / 2, 110);
+    
+    // Instructions box with background
+    const boxX = 50;
+    const boxY = 140;
+    const boxWidth = this.canvas.width - 100;
+    const boxHeight = 260;
+    
+    // Instructions background with rounded corners effect
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+    this.ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+    
+    // Instructions with better formatting
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.font = 'bold 22px Arial';
+    this.ctx.textAlign = 'center';
+    
+    // Mission statement (larger text)
+    this.ctx.font = 'bold 24px Arial';
+    this.ctx.fillStyle = '#FFD700';
+    this.ctx.fillText('🌟 MISSION BRIEFING 🌟', this.canvas.width / 2, 170);
+    
+    // Main instructions
+    this.ctx.font = 'bold 18px Arial';
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.textAlign = 'left';
+    
+    const leftCol = boxX + 30;
+    const rightCol = this.canvas.width / 2 + 20;
+    
+    // Left column
+    this.ctx.fillText('⏰ You have 1 MINUTE to cleanup', leftCol, 200);
+    this.ctx.fillText('   the playground!', leftCol, 225);
+    this.ctx.fillText('🦸 Help Captain Clean save the day!', leftCol, 255);
+    this.ctx.fillText('🗑️ Sort rubbish into correct bins', leftCol, 285);
+    
+    // Right column  
+    this.ctx.fillText('🦃 Avoid the bush turkeys!', rightCol, 200);
+    this.ctx.fillText('   (They steal your rubbish)', rightCol, 225);
+    this.ctx.fillText('👆 Drag to move around', rightCol, 255);
+    this.ctx.fillText('🎯 Get the highest score!', rightCol, 285);
+    
+    // How to start (centered)
+    this.ctx.fillStyle = '#7ED321';
+    this.ctx.font = 'bold 20px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('👇 Push START to begin your mission! 👇', this.canvas.width / 2, 350);
+    
+    // Draw START button with better positioning and styling
+    const buttonX = this.canvas.width / 2 - 120;
+    const buttonY = 420;
+    const buttonWidth = 240;
+    const buttonHeight = 80;
+    
+    // Button shadow (larger)
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    this.ctx.fillRect(buttonX + 6, buttonY + 6, buttonWidth, buttonHeight);
+    
+    // Button gradient background
+    const buttonGradient = this.ctx.createLinearGradient(buttonX, buttonY, buttonX, buttonY + buttonHeight);
+    buttonGradient.addColorStop(0, '#FFD700');
+    buttonGradient.addColorStop(0.5, '#F5A623');
+    buttonGradient.addColorStop(1, '#E8940F');
+    this.ctx.fillStyle = buttonGradient;
+    this.ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+    
+    // Button border with glow effect
+    this.ctx.strokeStyle = '#B8860B';
+    this.ctx.lineWidth = 4;
+    this.ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
+    
+    // Inner glow
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeRect(buttonX + 2, buttonY + 2, buttonWidth - 4, buttonHeight - 4);
+    
+    // Button text with shadow
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    this.ctx.font = 'bold 42px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('START', this.canvas.width / 2 + 2, buttonY + 52);
+    
+    this.ctx.fillStyle = 'white';
+    this.ctx.fillText('START', this.canvas.width / 2, buttonY + 50);
+    
+    // Store button bounds for click detection
+    this.startButton = {
+      x: buttonX,
+      y: buttonY,
+      width: buttonWidth,
+      height: buttonHeight
+    };
+    
+    // Add some sparkle effects around the button
+    this.ctx.fillStyle = '#FFD700';
+    const sparkles = [
+      {x: buttonX - 20, y: buttonY + 20},
+      {x: buttonX + buttonWidth + 15, y: buttonY + 25},
+      {x: buttonX - 15, y: buttonY + buttonHeight - 15},
+      {x: buttonX + buttonWidth + 10, y: buttonY + buttonHeight - 20}
+    ];
+    
+    sparkles.forEach(sparkle => {
+      this.ctx.save();
+      this.ctx.translate(sparkle.x, sparkle.y);
+      this.ctx.rotate(Math.PI / 4);
+      this.ctx.fillRect(-6, -2, 12, 4);
+      this.ctx.fillRect(-2, -6, 4, 12);
+      this.ctx.restore();
+    });
+    
+    // Credit text at bottom
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    this.ctx.font = '14px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('Game created by Layla D for Spring X 2025', this.canvas.width / 2, this.canvas.height - 20);
+  }
+  
+  startGame() {
+    this.gameState = 'playing';
+    this.timeLeft = this.gameTime;
+    this.score = 0;
+    this.player.x = 400;
+    this.player.y = 300;
+    this.player.carrying = null;
+    this.player.vx = 0;
+    this.player.vy = 0;
+    this.player.immune = true;
+    this.player.immuneTimer = 180;
+    
+    // Initialize game objects
+    this.trash = [];
+    this.enemies = [];
+    this.spawnTrash();
+    this.spawnEnemies();
+    
+    // Start timer
     this.updateUI();
     this.startTimer();
   }
