@@ -1,6 +1,17 @@
-# Super Recycle Man - Environmental Game
+# Peregian Pickup - Environmental Game
 
 An educational browser-based game about recycling and environmental awareness. Play as Super Recycle Man and help clean up the school playground by sorting trash into the correct bins while avoiding mischievous bush turkeys!
+
+## 🚀 Quick Deploy
+
+Deploy the backend database to Railway with one click:
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/6TEWnL)
+
+Or deploy manually:
+- [Deploy Backend to Railway](https://railway.app/new/github)
+- [Deploy to Render](https://render.com/deploy)
+- [Deploy to Vercel](https://vercel.com/import)
 
 ## 🎮 Game Features
 
