@@ -2085,6 +2085,10 @@ class SuperRecycleGame {
     this.player.vx = 0;
     this.player.vy = 0;
     
+    // Hide the CSS game title on start screen
+    const gameTitle = document.getElementById('gameTitle');
+    if (gameTitle) gameTitle.style.display = 'none';
+    
     // Reset game objects
     this.trash = [];
     this.enemies = [];
@@ -2279,6 +2283,10 @@ class SuperRecycleGame {
     this.player.vy = 0;
     this.player.immune = true;
     this.player.immuneTimer = 180;
+    
+    // Show the CSS game title during gameplay
+    const gameTitle = document.getElementById('gameTitle');
+    if (gameTitle) gameTitle.style.display = 'block';
     
     // Initialize game objects
     this.trash = [];
