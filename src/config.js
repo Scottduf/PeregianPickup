@@ -4,8 +4,8 @@ const config = {
     apiUrl: 'http://localhost:3001/api'
   },
   production: {
-    // Update this URL when you deploy the backend
-    apiUrl: 'https://your-backend-url.herokuapp.com/api' // Example: Heroku deployment
+    // This will be updated after Vercel deployment
+    apiUrl: 'https://peregian-pickup.vercel.app/api' // Vercel deployment
   }
 };
 

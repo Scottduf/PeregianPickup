@@ -1,0 +1,12 @@
+{
+  "name": "peregian-pickup-api",
+  "version": "1.0.0",
+  "description": "Serverless API for Peregian Pickup game",
+  "main": "scores.js",
+  "dependencies": {
+    "sqlite3": "^5.1.6"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
