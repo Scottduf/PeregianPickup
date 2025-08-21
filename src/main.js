@@ -58,7 +58,7 @@ class SuperRecycleGame {
     
     // Start game loop
     this.gameLoop();
-    this.startTimer();
+    // Timer will start when game begins, not here
   }
   
   initializeSounds() {
@@ -1932,6 +1932,7 @@ class SuperRecycleGame {
   }
   
   updateUI() {
+    document.getElementById('timer').textContent = this.timeLeft;
     document.getElementById('score').textContent = this.score;
     document.getElementById('carrying').textContent = this.player.carrying ? 
       this.player.carrying.item : 'Nothing';
@@ -2084,6 +2085,11 @@ class SuperRecycleGame {
     this.player.carrying = null;
     this.player.vx = 0;
     this.player.vy = 0;
+    
+    // Clear any running timer
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
     
     // Hide the CSS game title on start screen
     const gameTitle = document.getElementById('gameTitle');
@@ -2284,6 +2290,11 @@ class SuperRecycleGame {
     this.player.immune = true;
     this.player.immuneTimer = 180;
     
+    // Clear any existing timer before starting a new one
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
+    
     // Show the CSS game title during gameplay
     const gameTitle = document.getElementById('gameTitle');
     if (gameTitle) gameTitle.style.display = 'block';
@@ -2294,7 +2305,7 @@ class SuperRecycleGame {
     this.spawnTrash();
     this.spawnEnemies();
     
-    // Start timer
+    // Start timer only when game actually starts
     this.updateUI();
     this.startTimer();
   }
